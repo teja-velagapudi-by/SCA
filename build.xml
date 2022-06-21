@@ -1,0 +1,350 @@
+<project name="dss-msa" default="default" basedir="."
+  xmlns:jacoco="antlib:org.jacoco.ant"
+  xmlns:unless="ant:unless"
+  xmlns:if="ant:if">
+  <description>
+    DSS Moca Static Code Analysis
+  </description>
+
+  <!-- App name -->
+  <property name="app-name" value="dssmsa"/>
+  <property name="app-version" value="0.0"/>
+
+  <!-- set global properties for this build -->
+  <property environment="env"/>
+  <property name="3rdparty-lib" location="3rdparty"/>
+  <property name="bin" location="bin"/>
+  <property name="build" location="build/classes"/>
+  <property name="docs" location="docs"/>
+  <property name="lib" location="lib"/>
+  <property name="log" location="log"/>
+  <property name="src" location="src"/>
+  <property name="temp" location="temp"/>
+  <property name="tools" location="tools"/>
+
+  <property name="moca-extern-lib" location="${env.MOCADIR}/javalib"/>
+  <property name="moca-lib" location="${env.MOCADIR}/lib"/>
+  <property name="moca-test-3rdparty-lib" location="${env.MOCADIR}/test/3rdparty"/>
+  <property name="sal-test-3rdparty-lib" location="${env.SALDIR}/test/3rdparty"/>
+  <property name="wmd-lib" location="${env.DCSDIR}/lib" />
+  <property name="wmd-extern-lib" location="${env.DCSDIR}/javalib"/>
+
+  <property name="checkstyle.home" location="${moca-test-3rdparty-lib}/checkstyle"/>
+  <property name="javadocs" location="${docs}/api"/>
+  <property name="mockito.home" location="${sal-test-3rdparty-lib}/mockito"/>
+  <property name="pmd.home" location="${sal-test-3rdparty-lib}/pmd"/>
+  <property name="spotbugs.home" location="${sal-test-3rdparty-lib}/spotbugs"/>
+
+  <patternset id="all.jars">
+    <include name="**/*.jar"/>
+  </patternset>
+
+  <fileset id="moca.lib.files" dir="${moca-lib}">
+    <include name="**/*.jar"/>
+  </fileset>
+
+  <fileset id="moca.dependency.files" dir="${moca-extern-lib}">
+    <include name="**/*.jar"/>
+  </fileset>
+
+  <fileset id="sal.dependency.files" dir="${sal-test-3rdparty-lib}">
+    <include name="**/*.jar"/>
+  </fileset>
+
+  <fileset id="wmd.lib.files" dir="${wmd-lib}" erroronmissingdir="false">
+    <include name="**/*.jar"/>
+  </fileset>
+
+  <fileset id="wmd.dependency.files" dir="${wmd-extern-lib}" erroronmissingdir="false">
+    <include name="**/*.jar"/>
+  </fileset>
+
+  <!-- Set up the project's class path -->
+  <path id="project.class.path">
+    <fileset refid="moca.lib.files"/>
+    <fileset refid="moca.dependency.files"/>
+    <fileset refid="sal.dependency.files"/>
+    <fileset refid="wmd.lib.files"/>
+    <fileset refid="wmd.dependency.files"/>
+  </path>
+
+  <path id="checkstyle.classpath">
+    <fileset dir="${checkstyle.home}">
+      <patternset refid="all.jars"/>
+    </fileset>
+  </path>
+
+  <path id="spotbugs.classpath">
+    <fileset dir="${spotbugs.home}">
+      <patternset refid="all.jars"/>
+    </fileset>
+  </path>
+
+  <path id="pmd.classpath">
+    <fileset dir="${pmd.home}">
+      <patternset refid="all.jars"/>
+    </fileset>
+    <path refid="project.class.path"/>
+  </path>
+
+  <patternset id="resource.files">
+    <exclude name="**/*.java"/>
+    <exclude name="**/*.launch"/>
+  </patternset>
+
+  <target name="help" description="This target provides help on this buildfile.">
+    <echo message="This target provides help on this buildfile."/>
+    <echo>
+        Normally, you just have to run "ant", in the top-level product directory
+        to build everything.
+
+        To see all Targets (that have a description) run "ant -p"
+    </echo>
+    <echo message="                     Useful Info"/>
+    <echo message="---------------------------------------------------------"/>
+    <echo message="   The operating system is : ${os.name}"/>
+    <!-- absolute path of the project. -->
+    <echo message="          The base path is : ${basedir}"/>
+    <!-- absolute path of the build file. -->
+    <echo message="          The file name is : ${ant.file}"/>
+    <!-- root directory of ant. -->
+    <echo message="       The Project name is : ${ant.project.name}"/>
+    <echo message=" The Ant home directory is : ${ant.home}"/>
+    <echo message="        The Ant version is : ${ant.version}"/>
+    <echo message="       The Java version is : ${ant.java.version}"/>
+    <!-- System properties. -->
+    <echo message="The Java home directory is : ${java.home}"/>
+    <echo message="The User home directory is : ${user.home}"/>
+    <echo message="          The User name is : ${user.name}"/>
+  </target>
+
+  <target name="clean" description="This target provides deletes the build folders.">
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="build" includes="**/*"/>
+    </delete>
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="lib" includes="**/*"/>
+    </delete>
+  </target>
+
+  <target name="init" description="This target builds directories and sets properties. It depends on 'clean' target." depends="clean">
+
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="build/classes"/>
+    <mkdir dir="lib"/>
+    <mkdir dir="src/java/com/jda/dss/resources"/>
+
+    <!-- Perform token replacement to get build date/time into source files -->
+    <propertyfile file="src/java/com/jda/dss/resources/build.properties">
+      <entry key="releaseVersion" value="${app-version}"/>
+    </propertyfile>
+
+  </target>
+
+  <target name="mbuild" description="This runs mbuild.">
+    <exec dir="${basedir}" executable="${env.MOCADIR}/bin/mbuild" />
+  </target>
+
+  <!-- Compile Target -->
+  <available file="src/java" type="dir" property="javaexists"/>
+
+  <target name="compile" description="This target is the main compiling target dependent on 'init' target." depends="init" if="javaexists">
+    <javac srcdir="src/java" destdir="build/classes" source="1.7" target="1.7" compiler="javac1.7" includeAntRuntime="false" debug="true">
+      <classpath refid="project.class.path"/>
+    </javac>
+
+    <!-- copy all supporting files to the build area -->
+    <copy todir="build/classes">
+      <fileset dir="src/java">
+        <patternset refid="resource.files"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- Distribuion Target -->
+  <target name="jar" description="This target creates the jar fiels, it is dependent on the 'compile' target." depends="compile" if="javaexists">
+    <jar jarfile="lib/${app-name}.jar">
+      <fileset dir="build/classes">
+      </fileset>
+    </jar>
+  </target>
+
+  <target name="all" description= "This runs 'jar' target." depends="jar"/>
+
+  <target name="default" description= "This is the default which runs the 'all' target." depends="all"/>
+
+  <!-- =================================================================== -->
+  <!--   All precommit validation tasks                                    -->
+  <!-- =================================================================== -->
+
+  <target name="validate" description="All precommit validation targets, its dependent on 'standards', and 'pmd-complexity'" depends="standards,pmd-complexity"/>
+
+  <!-- =================================================================== -->
+  <!--   Run all standards as a validation group                           -->
+  <!-- =================================================================== -->
+
+  <target name="standards" description="All build-time standards targets, it's dependent on 'default', 'checkstyle', 'pmd', 'spotbugs' targets." depends="default, checkstyle, pmd, spotbugs"/>
+
+  <!-- ==================================================================== -->
+  <!--   CHECKSTYLE                                                         -->
+  <!-- ==================================================================== -->
+
+  <target name="checkstyle" description= "Runs checkstyle static code analysis.">
+    <mkdir dir="${log}"/>
+    <taskdef resource="com/puppycrawl/tools/checkstyle/ant/checkstyle-ant-task.properties" classpathref="checkstyle.classpath"/>
+    <checkstyle config="${tools}/checkstyle/checkStyleConfig.xml" failureProperty="checkstyle.failure" failOnViolation="false" maxWarnings="0" maxErrors="0">
+      <classpath refid="project.class.path"/>
+      <fileset dir="${src}" includes="**/*.java"/>
+      <formatter type="xml" toFile="${log}/dssmsa_cm_checkstyle_results.xml"/>
+    </checkstyle>
+    <xslt in="${log}/dssmsa_cm_checkstyle_results.xml" out="${log}/dssmsa_cm_checkstyle_report.html" style="${tools}/checkstyle/checkstyle_results_to_html.xsl"/>
+    <fail message="Checkstyle Results: ${log}/dssmsa_cm_checkstyle_report.html">
+      <condition>
+        <isset property="checkstyle.failure"/>
+      </condition>
+    </fail>
+  </target>
+
+  <!-- ==================================================================== -->
+  <!--   SPOTBUGS                                                           -->
+  <!-- ==================================================================== -->
+
+  <target name="spotbugs" description="SpotBugs Java source code analysis for direct execution">
+    <antcall target="-spotbugs-base">
+      <param name="output.name" value="spotbugs_report"/>
+      <param name="output.format" value="html"/>
+      <param name="fail.on.violations" value="true"/>
+    </antcall>
+  </target>
+
+  <target name="-spotbugs-base" description="SpotBugs Java source code analysis">
+    <mkdir dir="${log}"/>
+
+    <path id="spotbugs.sourcepath">
+      <dirset dir="${basedir}">
+        <include name="src/java"/>
+      </dirset>
+    </path>
+
+    <fileset id="spotbugs.fileset.custom" dir="${basedir}" includes="build/classes"/>
+
+    <fileset id="spotbugs.fileset.default" dir="${basedir}">
+      <include name="lib/${app-name}.jar"/>
+    </fileset>
+
+    <condition property="spotbugs.fileset" value="spotbugs.fileset.custom" else="spotbugs.fileset.default">
+      <isset property="classes"/>
+    </condition>
+
+    <taskdef name="spotbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpathref="spotbugs.classpath"/>
+
+    <spotbugs home="${spotbugs.home}" output="${output.format}" reportLevel="low" excludeFilter="spotbugsrules.xml" jvmargs="-Xmx2g" timeout="90000000" effort="max" outputfile="${log}/${output.name}.${output.format}" quietErrors="false" failOnError="true" warningsProperty="violations.found">
+      <sourcePath refid="spotbugs.sourcepath"/>
+      <fileset refid="${spotbugs.fileset}"/>
+
+      <auxClasspath>
+        <path refid="project.class.path"/>
+        <path>
+          <pathelement location="${moca-lib}/moca-native.jar"/>
+          <pathelement location="${moca-lib}/moca-test.jar"/>
+          <pathelement location="${moca-lib}/moca-core.jar"/>
+          <fileset dir="${mockito.home}">
+            <include name="**/*.jar"/>
+          </fileset>
+          <fileset dir="${env.SALDIR}/test/3rdparty">
+            <include name="**/*.jar"/>
+          </fileset>
+        </path>
+      </auxClasspath>
+    </spotbugs>
+
+    <condition property="spotbugs.fail">
+      <and>
+        <equals arg1="${violations.found}" arg2="true"/>
+        <equals arg1="${fail.on.violations}" arg2="true"/>
+      </and>
+    </condition>
+    <fail if="spotbugs.fail" message="Spotbugs violations found"/>
+
+  </target>
+
+  <!-- ==================================================================== -->
+  <!--   PMD                                                                -->
+  <!-- ==================================================================== -->
+
+  <condition property="execute.pmd" value="true" else="false">
+    <or>
+      <os family="Windows"/>
+      <os family="Mac"/>
+      <isset property="empty.classpath"/>
+    </or>
+  </condition>
+
+  <target name="pmd" description="General PMD java analysis. Does not include complexity">
+    <!-- Linux has system CLASSPATH issues with PMD that can only be resolved by running it with a clean environment. -->
+    <exec executable="ant" newenvironment="true" failonerror="true" failifexecutionfails="true" unless:true="${execute.pmd}">
+      <arg value="pmd"/>
+      <arg value="-Dempty.classpath=true"/>
+    </exec>
+
+    <antcall target="-pmd-base">
+      <param name="config.file" value="pmdrules.xml"/>
+      <param name="output.format" value="html"/>
+      <param name="report.file" value="pmd_report.html"/>
+      <param name="fail.on.violation" value="true"/>
+    </antcall>
+  </target>
+
+  <target name="pmd-complexity" unless="validations.skip" description="Run PMD java code-complexity analysis">
+    <!-- Linux has system CLASSPATH issues with PMD that can only be resolved by running it with a clean environment. -->
+    <exec executable="ant" newenvironment="true" failonerror="true" failifexecutionfails="true" unless:true="${execute.pmd}">
+      <arg value="pmd-complexity"/>
+      <arg value="-Dempty.classpath=true"/>
+    </exec>
+
+    <antcall target="-pmd-base">
+      <param name="config.file" value="pmd-complexity.xml"/>
+      <param name="output.format" value="html"/>
+      <param name="report.file" value="pmd_complexity_report.html"/>
+      <param name="fail.on.violation" value="true"/>
+    </antcall>
+  </target>
+
+  <target name="-pmd-base" if="${execute.pmd}" description="Common PMD execution target (private)">
+    <echo>Running PMD...</echo>
+    <echo>Output will be saved to ${log}/${report.file}</echo>
+
+    <mkdir dir="${log}"/>
+
+    <!-- Use -Dfiles to pass in a custom set of files to analyze. For example:
+         ant pmd -Dfiles="src/java/legacy/**/*.java, src/java/prod/**/*.java" -->
+    <fileset id="pmd.fileset.custom" dir="${basedir}" includes="${files}"/>
+    <!-- If -Dclassname is specified, only classname.java will be analyzed -->
+    <fileset id="pmd.fileset.filespec" dir="${basedir}">
+      <include name="src/java/**/${classname}.java"/>
+    </fileset>
+    <fileset id="pmd.fileset.default" dir="${basedir}">
+      <include name="src/java/**/*.java"/>
+    </fileset>
+    <condition property="pmd.fileset" value="pmd.fileset.custom">
+      <isset property="files"/>
+    </condition>
+    <condition property="pmd.fileset" value="pmd.fileset.filespec" else="pmd.fileset.default">
+      <isset property="classname"/>
+    </condition>
+
+    <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.classpath"/>
+
+    <pmd rulesetfiles="${config.file}" failonerror="true" failOnRuleViolation="${fail.on.violation}" noCache="true">
+      <sourceLanguage name="java" version="1.8"/>
+      <formatter type="${output.format}" toFile="${log}/${report.file}"/>
+      <fileset refid="${pmd.fileset}"/>
+      <auxclasspath>
+        <path refid="pmd.classpath"/>
+      </auxclasspath>
+    </pmd>
+  </target>
+
+
+
+</project>
