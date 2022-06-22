@@ -12,45 +12,31 @@ import com.redprairie.moca.analysis.RuleSet;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 @Component
-public class SqlExtractionFromMocaRule implements RuleSet {
-    @StaticAnalysisRule(id = "Sql Extraction From MOCA Rule")
+public class SqlChecksRule implements RuleSet {
+    @StaticAnalysisRule(id = "Sql check for Rollback and Commit")
     public Issue execute(LocalSyntaxCommand command) {
 
-        List<String> sqlStatement = new ArrayList<>();
-        final Pattern JOIN_TABLE_PATTERN = Pattern.compile("[ /]join ([a-z0-9_ ]+)");
-        int count = 0;
-
+        final Pattern pattern = Pattern.compile("(commit|rollback)");
+        final String name = command.getName();
         final LocalSyntaxCompiler COMPILER = new LocalSyntaxCompiler();
         List<CommandUnit> units = COMPILER.compile(command);
+
         for (CommandUnit unit : units) {
             if (StringUtils.isNotBlank(unit.getSql())) {
-                sqlStatement.add(unit.getSql());
-
-
+                Matcher select_matcher = pattern.matcher(unit.getSql().toLowerCase());
+                if(select_matcher.find()){
+                    String description = "Please remove commit or rollback statements from SQL queries in the Command Name: ";
+                    return Issue.newIssue(message+ description+ name,IssueLevel.ERROR);
+                }
             }
         }
-
-        /*
-        Validate SQL
-        */
-
-        /* Count joins */
-        for (String cmd : sqlStatement) {
-            Matcher matcher = JOIN_TABLE_PATTERN.matcher(cmd);
-            while (matcher.find()) {
-                count++;
-            }
-        }
-
-        return Issue.newIssue("SQL RULE CHANGED", IssueLevel.WARN);
-
-
+        return Issue.noIssue();
     }
+    private static final String message = "Please Follow Proper SQL checks:- ";
 }
