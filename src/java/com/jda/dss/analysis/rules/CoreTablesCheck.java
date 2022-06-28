@@ -19,7 +19,7 @@ public class CoreTablesCheck implements RuleSet {
     @StaticAnalysisRule(id = "Sql check for Core Tables")
     public Issue execute(LocalSyntaxCommand command) {
 
-        final Pattern pattern = Pattern.compile("(insert into|update|delete from) (vc|usr|dss|us)[\\w]+");
+        final Pattern pattern = Pattern.compile("(insert into|update|delete from)\\s+(vc|usr|dss|us)[\\w]+");
         final String name = command.getName();
         final LocalSyntaxCompiler COMPILER = new LocalSyntaxCompiler();
         final String message = "Please Follow Proper SQL checks:- ";
