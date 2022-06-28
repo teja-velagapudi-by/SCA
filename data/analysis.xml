@@ -9,6 +9,8 @@
     <bean id="ForUpdateCheckRule" class="com.jda.dss.analysis.rules.ForUpdateCheckRule" />
     <bean id="DlytrnCheckRule" class="com.jda.dss.analysis.rules.DlytrnCheckRule" />
     <bean id="CoreTablesCheck" class="com.jda.dss.analysis.rules.CoreTablesCheck" />
+    <bean id="WhereCheckRule" class="com.jda.dss.analysis.rules.WhereCheckRule" />
+    <bean id="SelectCheckRule" class="com.jda.dss.analysis.rules.SelectCheckRule" />
 
 
 
