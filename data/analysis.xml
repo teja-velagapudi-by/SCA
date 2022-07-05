@@ -11,7 +11,7 @@
     <bean id="CoreTablesCheck" class="com.jda.dss.analysis.rules.CoreTablesCheck" />
     <bean id="WhereCheckRule" class="com.jda.dss.analysis.rules.WhereCheckRule" />
     <bean id="SelectCheckRule" class="com.jda.dss.analysis.rules.SelectCheckRule" />
-
-
+    <bean id="NonAnsiJoinCheckRule" class="com.jda.dss.analysis.rules.NonAnsiJoinCheckRule" />
+    
 
 </beans>

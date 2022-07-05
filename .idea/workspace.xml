@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="50b4f094-3b32-4ca7-b6f3-e2d2eafca75b" name="Changes" comment="milestone 11,12 added">
-      <change beforePath="$PROJECT_DIR$/src/java/com/jda/dss/analysis/rules/CoreTablesCheck.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/com/jda/dss/analysis/rules/CoreTablesCheck.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/java/com/jda/dss/analysis/rules/NonAnsiJoinCheckRule.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/analysis.xml" beforeDir="false" afterPath="$PROJECT_DIR$/data/analysis.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +82,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656441547459</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="milestone 11,12 added">
+      <created>1656441601386</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1656441601386</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
