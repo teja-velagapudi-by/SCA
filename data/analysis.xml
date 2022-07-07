@@ -12,6 +12,7 @@
     <bean id="WhereCheckRule" class="com.jda.dss.analysis.rules.WhereCheckRule" />
     <bean id="SelectCheckRule" class="com.jda.dss.analysis.rules.SelectCheckRule" />
     <bean id="NonAnsiJoinCheckRule" class="com.jda.dss.analysis.rules.NonAnsiJoinCheckRule" />
-    
+    <bean id="CatchCheckRule" class="com.jda.dss.analysis.rules.CatchCheckRule" />
+    <bean id="PolicyCheckRule" class="com.jda.dss.analysis.rules.PolicyCheckRule" />
 
 </beans>
