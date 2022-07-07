@@ -20,7 +20,7 @@ public class PolicyCheckRule implements RuleSet {
     @StaticAnalysisRule(id = "Sql check for Policy Tables")
     public Issue execute(LocalSyntaxCommand command) {
 
-        final Pattern pattern = Pattern.compile("\\bselect\\b.*?(poldat_view|poldat)",Pattern.DOTALL);
+        final Pattern pattern = Pattern.compile("\\bselect\\b.*?(\\bpoldat_view\\b|\\bpoldat\\b)",Pattern.DOTALL);
         final String name = command.getName();
         final LocalSyntaxCompiler COMPILER = new LocalSyntaxCompiler();
         final String message = "Please Follow Proper SQL checks:- ";
